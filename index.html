@@ -123,10 +123,21 @@
             font-weight: bold;
         }
         
+        .crypto-categories {
+            margin-bottom: 20px;
+        }
+        
+        .category-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #666;
+        }
+        
         .crypto-selector {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
         
@@ -150,6 +161,7 @@
             background-color: #e8e8e8;
         }
         
+        /* Major cryptos */
         .crypto-btn.btc {
             border-left: 4px solid #f7931a;
         }
@@ -166,8 +178,29 @@
             border-left: 4px solid #bfbbbb;
         }
         
+        .crypto-btn.sol {
+            border-left: 4px solid #14f195;
+        }
+        
+        /* Memecoins */
         .crypto-btn.doge {
             border-left: 4px solid #c3a634;
+        }
+        
+        .crypto-btn.shib {
+            border-left: 4px solid #ffa409;
+        }
+        
+        .crypto-btn.pepe {
+            border-left: 4px solid #43a047;
+        }
+        
+        .crypto-btn.floki {
+            border-left: 4px solid #ff6b00;
+        }
+        
+        .crypto-btn.bonk {
+            border-left: 4px solid #ffcc00;
         }
         
         .loader {
@@ -236,12 +269,25 @@
         <!-- Crypto Selector -->
         <div class="card">
             <h3>Select Cryptocurrency</h3>
-            <div class="crypto-selector">
-                <button class="crypto-btn btc active" data-crypto="BTC">Bitcoin (BTC)</button>
-                <button class="crypto-btn eth" data-crypto="ETH">Ethereum (ETH)</button>
-                <button class="crypto-btn xrp" data-crypto="XRP">Ripple (XRP)</button>
-                <button class="crypto-btn ltc" data-crypto="LTC">Litecoin (LTC)</button>
-                <button class="crypto-btn doge" data-crypto="DOGE">Dogecoin (DOGE)</button>
+            
+            <div class="crypto-categories">
+                <div class="category-title">Major Cryptocurrencies</div>
+                <div class="crypto-selector">
+                    <button class="crypto-btn btc active" data-crypto="BTC">Bitcoin (BTC)</button>
+                    <button class="crypto-btn eth" data-crypto="ETH">Ethereum (ETH)</button>
+                    <button class="crypto-btn xrp" data-crypto="XRP">Ripple (XRP)</button>
+                    <button class="crypto-btn ltc" data-crypto="LTC">Litecoin (LTC)</button>
+                    <button class="crypto-btn sol" data-crypto="SOL">Solana (SOL)</button>
+                </div>
+                
+                <div class="category-title">Memecoins</div>
+                <div class="crypto-selector">
+                    <button class="crypto-btn doge" data-crypto="DOGE">Dogecoin (DOGE)</button>
+                    <button class="crypto-btn shib" data-crypto="SHIB">Shiba Inu (SHIB)</button>
+                    <button class="crypto-btn pepe" data-crypto="PEPE">Pepe (PEPE)</button>
+                    <button class="crypto-btn floki" data-crypto="FLOKI">Floki (FLOKI)</button>
+                    <button class="crypto-btn bonk" data-crypto="BONK">Bonk (BONK)</button>
+                </div>
             </div>
         </div>
         
@@ -335,24 +381,45 @@
         let currentCrypto = 'BTC';
         let currentPeriodDays = 1;
         const cryptoNames = {
+            // Major cryptos
             'BTC': 'Bitcoin',
             'ETH': 'Ethereum',
             'XRP': 'Ripple',
             'LTC': 'Litecoin',
-            'DOGE': 'Dogecoin'
+            'SOL': 'Solana',
+            // Memecoins
+            'DOGE': 'Dogecoin',
+            'SHIB': 'Shiba Inu',
+            'PEPE': 'Pepe',
+            'FLOKI': 'Floki',
+            'BONK': 'Bonk'
         };
         
         const cryptoColors = {
+            // Major cryptos
             'BTC': '#f7931a',
             'ETH': '#627eea',
             'XRP': '#23292f',
             'LTC': '#bfbbbb',
-            'DOGE': '#c3a634'
+            'SOL': '#14f195',
+            // Memecoins
+            'DOGE': '#c3a634',
+            'SHIB': '#ffa409',
+            'PEPE': '#43a047',
+            'FLOKI': '#ff6b00',
+            'BONK': '#ffcc00'
         };
         
         // Format utilities
         function formatPrice(price) {
-            if (price < 0.01) {
+            if (price < 0.0001) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 6,
+                    maximumFractionDigits: 8
+                }).format(price);
+            } else if (price < 0.01) {
                 return new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'USD',
@@ -377,7 +444,9 @@
         }
         
         function formatNumber(num) {
-            if (num >= 1_000_000_000) {
+            if (num >= 1_000_000_000_000) {
+                return `${(num / 1_000_000_000_000).toFixed(2)}T`;
+            } else if (num >= 1_000_000_000) {
                 return `${(num / 1_000_000_000).toFixed(2)}B`;
             } else if (num >= 1_000_000) {
                 return `${(num / 1_000_000).toFixed(2)}M`;
@@ -436,6 +505,12 @@
                 }
                 
                 const data = await response.json();
+                
+                // Check if we have data for this crypto
+                if (!data.RAW || !data.RAW[crypto] || !data.RAW[crypto].USD) {
+                    throw new Error(`No data available for ${crypto}`);
+                }
+                
                 const cryptoData = data.RAW[crypto].USD;
                 
                 // Update current stats
@@ -502,6 +577,11 @@
                 }
                 
                 const historicalData = data.Data.Data;
+                
+                if (!historicalData || historicalData.length < 2) {
+                    throw new Error(`Insufficient historical data for ${crypto}`);
+                }
+                
                 updatePriceChart(historicalData, days, crypto);
                 updatePeriodMetrics(historicalData);
                 
@@ -534,6 +614,7 @@
             if (priceChart) {
                 priceChart.data.labels = labels;
                 priceChart.data.datasets[0].data = prices;
+                priceChart.data.datasets[0].label = `${cryptoNames[crypto]} (${crypto}) Price (USD)`;
                 priceChart.data.datasets[0].backgroundColor = `${cryptoColors[crypto]}33`; // 20% opacity
                 priceChart.data.datasets[0].borderColor = cryptoColors[crypto];
                 priceChart.update();
@@ -543,7 +624,7 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: `${crypto} Price (USD)`,
+                            label: `${cryptoNames[crypto]} (${crypto}) Price (USD)`,
                             data: prices,
                             backgroundColor: `${cryptoColors[crypto]}33`, // 20% opacity
                             borderColor: cryptoColors[crypto],
@@ -557,7 +638,7 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: false
+                                display: true
                             },
                             tooltip: {
                                 callbacks: {
