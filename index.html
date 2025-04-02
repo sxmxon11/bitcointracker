@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Price Tracker</title>
+    
+    <!-- Include Plotly.js from CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            background-color: #ffffff;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin: 15px 0;
+            color: #444;
+        }
+        
+        h3 {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #555;
+        }
+        
+        /* Layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .column {
+            padding: 0 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        /* Card */
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            background-color: #f8f8f8;
+        }
+        
+        .tab.active {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-bottom: 1px solid #fff;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Chart container */
+        .chart-container {
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        /* Metrics */
+        .metrics-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .metric {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 0 10px 10px 0;
+            min-width: 150px;
+            flex-grow: 1;
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            color: #777;
+        }
+        
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .metric-value.positive {
+            color: #28a745;
+        }
+        
+        .metric-value.negative {
+            color: #dc3545;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        /* Loading spinner */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            text-align: center;
+            margin: 10px 0;
+            color: #777;
+        }
+        
+        /* Error message */
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        /* Collapsible */
+        .collapsible {
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .collapsible:after {
+            content: '\002B';
+            font-weight: bold;
+            float: right;
+        }
+        
+        .active-collapse:after {
+            content: "\2212";
+        }
+        
+        .collapsible-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background-color: #fff;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .column {
+                flex: 100%;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 10px;
+            }
+            
+            .tab {
+                display: inline-block;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Bitcoin (BTC) Price Tracker</h1>
+            <h2>Historical price data and percentage changes</h2>
+        </div>
+    </header>
+    
+    <main class="container">
+        <!-- Current Stats Card -->
+        <div class="card">
+            <h3>Current Stats</h3>
+            <div id="current-stats-loader" class="loader"></div>
+            <p id="current-stats-loading" class="loading-text">Loading current data...</p>
+            <div id="current-stats-error" class="error-message" style="display: none;"></div>
+            <div id="current-stats" class="metrics-container" style="display: none;">
+                <div class="metric">
+                    <div class="metric-label">Current BTC Price</div>
+                    <div id="current-price" class="metric-value">$0.00</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">24h Change</div>
+                    <div id="price-change" class="metric-value">0.00%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">24h Trading Volume</div>
+                    <div id="trading-volume" class="metric-value">$0.00</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Market Cap</div>
+                    <div id="market-cap" class="metric-value">$0.00</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Time Period Tabs -->
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" data-period="1d">1 Day</div>
+                <div class="tab" data-period="5d">5 Days</div>
+                <div class="tab" data-period="1w">1 Week</div>
+                <div class="tab" data-period="1m">1 Month</div>
+                <div class="tab" data-period="6m">6 Months</div>
+                <div class="tab" data-period="1y">1 Year</div>
+            </div>
+            
+            <!-- Tab contents - will be dynamically populated -->
+            <div id="tab-content-container">
+                <div id="chart-loader" class="loader"></div>
+                <p id="chart-loading" class="loading-text">Loading chart data...</p>
+                <div id="chart-error" class="error-message" style="display: none;"></div>
+                
+                <div id="chart-container" class="chart-container" style="display: none;"></div>
+                
+                <div class="row">
+                    <div class="column">
+                        <div id="metrics-container" class="metrics-container" style="display: none;">
+                            <div class="metric">
+                                <div class="metric-label">Change</div>
+                                <div id="period-change" class="metric-value">0.00%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Low</div>
+                                <div id="period-low" class="metric-value">$0.00</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">High</div>
+                                <div id="period-high" class="metric-value">$0.00</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Date Range</div>
+                                <div id="date-range" class="metric-value" style="font-size: 0.9rem;">N/A</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="advanced-metrics-container" style="display: none; margin-top: 20px;">
+                    <button class="collapsible">Advanced Metrics</button>
+                    <div class="collapsible-content">
+                        <div class="metrics-container" style="margin-top: 10px;">
+                            <div class="metric">
+                                <div class="metric-label">Avg. Daily Change</div>
+                                <div id="avg-daily-change" class="metric-value">0.00%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Volatility (Std Dev)</div>
+                                <div id="volatility" class="metric-value">0.00%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Avg. Daily Volume</div>
+                                <div id="avg-volume" class="metric-value">$0.00</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Avg. Market Cap</div>
+                                <div id="avg-market-cap" class="metric-value">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison Chart Card -->
+        <div class="card">
+            <h3>Percentage Change Comparison</h3>
+            <div id="comparison-loader" class="loader"></div>
+            <p id="comparison-loading" class="loading-text">Generating comparison data...</p>
+            <div id="comparison-error" class="error-message" style="display: none;"></div>
+            
+            <div class="row" id="comparison-container" style="display: none;">
+                <div class="column" style="flex: 3;">
+                    <div id="comparison-chart" class="chart-container"></div>
+                </div>
+                <div class="column" style="flex: 1;">
+                    <h3>Summary</h3>
+                    <div class="metrics-container">
+                        <div class="metric">
+                            <div class="metric-label">Best Period</div>
+                            <div id="best-period" class="metric-value positive">N/A</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Worst Period</div>
+                            <div id="worst-period" class="metric-value negative">N/A</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 GamingImage</p>
+            <p>Data provided by CoinGecko API<br>
+            Last updated: <span id="last-updated">2025-04-02 00:00:00</span></p>
+        </div>
+    </footer>
+    
+    <script>
+        // Global variables
+        const API_BASE = 'https://api.coingecko.com/api/v3';
+        let currentPeriod = '1d';
+        let allPeriodData = {};
+        
+        // Utility functions
+        function formatPrice(price) {
+            if (price >= 1_000_000_000) {
+                return `${(price/1_000_000_000).toFixed(2)}B`;
+            } else if (price >= 1_000_000) {
+                return `${(price/1_000_000).toFixed(2)}M`;
+            } else if (price >= 10_000) {
+                return `${(price/1_000).toFixed(2)}K`;
+            } else if (price >= 100) {
+                return price.toFixed(2);
+            } else {
+                return price.toFixed(4);
+            }
+        }
+        
+        function formatPercentage(pct) {
+            if (pct === null || pct === undefined || isNaN(pct)) {
+                return 'N/A';
+            }
+            const sign = pct > 0 ? '+' : '';
+            return `${sign}${pct.toFixed(2)}%`;
+        }
+        
+        function calculatePercentageChange(prices) {
+            if (!prices || prices.length < 2) return null;
+            const startPrice = prices[0][1];
+            const endPrice = prices[prices.length - 1][1];
+            return ((endPrice - startPrice) / startPrice) * 100;
+        }
+        
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toISOString().split('T')[0];
+        }
+        
+        function calculateDailyChanges(prices) {
+            if (!prices || prices.length < 2) return [];
+            
+            const dailyChanges = [];
+            for (let i = 1; i < prices.length; i++) {
+                const prevPrice = prices[i-1][1];
+                const currPrice = prices[i][1];
+                const change = ((currPrice - prevPrice) / prevPrice) * 100;
+                dailyChanges.push(change);
+            }
+            
+            return dailyChanges;
+        }
+        
+        function calculateStandardDeviation(values) {
+            const n = values.length;
+            if (n === 0) return 0;
+            
+            const mean = values.reduce((sum, val) => sum + val, 0) / n;
+            const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n;
+            return Math.sqrt(variance);
+        }
+        
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function hideError(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+        
+        function showLoading(loaderId, loadingTextId) {
+            document.getElementById(loaderId).style.display = 'block';
+            document.getElementById(loadingTextId).style.display = 'block';
+        }
+        
+        function hideLoading(loaderId, loadingTextId, containerId) {
+            document.getElementById(loaderId).style.display = 'none';
+            document.getElementById(loadingTextId).style.display = 'none';
+            if (containerId) {
+                document.getElementById(containerId).style.display = 'block';
+            }
+        }
+        
+        // Fetch current Bitcoin stats
+        async function fetchCurrentStats() {
+            showLoading('current-stats-loader', 'current-stats-loading');
+            hideError('current-stats-error');
+            
+            try {
+                const response = await fetch(`${API_BASE}/coins/bitcoin`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error fetching data: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                const currentPrice = data.market_data.current_price.usd;
+                const priceChange24h = data.market_data.price_change_percentage_24h;
+                const tradingVolume = data.market_data.total_volume.usd;
+                const marketCap = data.market_data.market_cap.usd;
+                
+                // Update the UI
+                document.getElementById('current-price').textContent = `$${formatPrice(currentPrice)}`;
+                const priceChangeElement = document.getElementById('price-change');
+                priceChangeElement.textContent = formatPercentage(priceChange24h);
+                priceChangeElement.className = `metric-value ${priceChange24h >= 0 ? 'positive' : 'negative'}`;
+                document.getElementById('trading-volume').textContent = `$${formatPrice(tradingVolume)}`;
+                document.getElementById('market-cap').textContent = `$${formatPrice(marketCap)}`;
+                
+                // Update last updated time
+                document.getElementById('last-updated').textContent = new Date().toLocaleString();
+                
+                hideLoading('current-stats-loader', 'current-stats-loading', 'current-stats');
+            } catch (error) {
+                console.error('Error fetching current stats:', error);
+                hideLoading('current-stats-loader', 'current-stats-loading');
+                showError('current-stats-error', `Unable to load current Bitcoin data: ${error.message}`);
+            }
+        }
+        
+        // Fetch Bitcoin price history
+        async function fetchBitcoinHistory(period) {
+            showLoading('chart-loader', 'chart-loading');
+            hideError('chart-error');
+            document.getElementById('chart-container').style.display = 'none';
+            document.getElementById('metrics-container').style.display = 'none';
+            document.getElementById('advanced-metrics-container').style.display = 'none';
+            
+            // Define the time range
+            let days;
+            switch (period) {
+                case '1d': days = 1; break;
+                case '5d': days = 5; break;
+                case '1w': days = 7; break;
+                case '1m': days = 30; break;
+                case '6m': days = 180; break;
+                case '1y': days = 365; break;
+                default: days = 1;
+            }
+            
+            try {
+                // If we already have data for this period, use it
+                if (allPeriodData[period]) {
+                    processHistoryData(allPeriodData[period], period);
+                    return;
+                }
+                
+                // Build API URL based on the period
+                const url = `${API_BASE}/coins/bitcoin/market_chart`;
+                const params = new URLSearchParams({
+                    vs_currency: 'usd',
+                    days: days,
+                    interval: days <= 7 ? 'hourly' : 'daily'
+                });
+                
+                const response = await fetch(`${url}?${params.toString()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error fetching data: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Cache the data
+                allPeriodData[period] = data;
+                
+                // Process and display the data
+                processHistoryData(data, period);
+                
+            } catch (error) {
+                console.error(`Error fetching ${period} data:`, error);
+                hideLoading('chart-loader', 'chart-loading');
+                showError('chart-error', `Unable to load Bitcoin price history: ${error.message}`);
+            }
+        }
+        
+        // Process and display Bitcoin history data
+        function processHistoryData(data, period) {
+            try {
+                const prices = data.prices || [];
+                const marketCaps = data.market_caps || [];
+                const volumes = data.total_volumes || [];
+                
+                if (prices.length === 0) {
+                    throw new Error('No price data available');
+                }
+                
+                // Calculate metrics
+                const pctChange = calculatePercentageChange(prices);
+                const minPrice = Math.min(...prices.map(p => p[1]));
+                const maxPrice = Math.max(...prices.map(p => p[1]));
+                const startDate = formatDate(prices[0][0]);
+                const endDate = formatDate(prices[prices.length - 1][0]);
+                const dateRange = `${startDate} to ${endDate}`;
+                
+                // Advanced metrics
+                const dailyChanges = calculateDailyChanges(prices);
+                const avgDailyChange = dailyChanges.reduce((sum, val) => sum + val, 0) / dailyChanges.length;
+                const volatility = calculateStandardDeviation(dailyChanges);
+                const avgVolume = volumes.reduce((sum, v) => sum + v[1], 0) / volumes.length;
+                const avgMarketCap = marketCaps.reduce((sum, m) => sum + m[1], 0) / marketCaps.length;
+                
+                // Update metrics in the UI
+                const periodChangeElement = document.getElementById('period-change');
+                periodChangeElement.textContent = formatPercentage(pctChange);
+                periodChangeElement.className = `metric-value ${pctChange >= 0 ? 'positive' : 'negative'}`;
+                
+                document.getElementById('period-low').textContent = `$${formatPrice(minPrice)}`;
+                document.getElementById('period-high').textContent = `$${formatPrice(maxPrice)}`;
+                document.getElementById('date-range').textContent = dateRange;
+                
+                // Advanced metrics
+                document.getElementById('avg-daily-change').textContent = formatPercentage(avgDailyChange);
+                document.getElementById('volatility').textContent = formatPercentage(volatility);
+                document.getElementById('avg-volume').textContent = `$${formatPrice(avgVolume)}`;
+                document.getElementById('avg-market-cap').textContent = `$${formatPrice(avgMarketCap)}`;
+                
+                // Create the chart
+                createPriceChart(prices, period);
+                
+                // Show the elements
+                hideLoading('chart-loader', 'chart-loading', 'chart-container');
+                document.getElementById('metrics-container').style.display = 'flex';
+                document.getElementById('advanced-metrics-container').style.display = 'block';
+            } catch (error) {
+                console.error('Error processing history data:', error);
+                hideLoading('chart-loader', 'chart-loading');
+                showError('chart-error', `Error processing Bitcoin data: ${error.message}`);
+            }
+        }
+        
+        // Create price chart
+        function createPriceChart(prices, period) {
+            // Format the data for Plotly
+            const dates = prices.map(p => new Date(p[0]));
+            const priceValues = prices.map(p => p[1]);
+            
+            // Create the trace
+            const trace = {
+                x: dates,
+                y: priceValues,
+                mode: 'lines',
+                name: 'BTC Price',
+                line: {
+                    color: 'orange',
+                    width: 2
+                }
+            };
+            
+            // Layout configuration
+            const layout = {
+                xaxis: {
+                    title: 'Date',
+                    type: 'date',
+                    rangeslider: {
+                        visible: true
+                    }
+                },
+                yaxis: {
+                    title: 'Price (USD)',
+                    tickprefix: '$'
+                },
+                margin: {
+                    l: 50,
+                    r: 20,
+                    t: 10,
+                    b: 40
+                },
+                showlegend: false,
+                hovermode: 'x unified',
+                template: 'plotly_white'
+            };
+            
+            // Create the chart
+            Plotly.newPlot('chart-container', [trace], layout, {responsive: true});
+        }
+        
+        // Generate comparison chart
+        async function generateComparisonChart() {
+            showLoading('comparison-loader', 'comparison-loading');
+            hideError('comparison-error');
+            document.getElementById('comparison-container').style.display = 'none';
+            
+            try {
+                // Define time periods
+                const periods = ['1d', '5d', '1w', '1m', '6m', '1y'];
+                const periodNames = {
+                    '1d': '1 Day',
+                    '5d': '5 Days',
+                    '1w': '1 Week',
+                    '1m': '1 Month',
+                    '6m': '6 Months',
+                    '1y': '1 Year'
+                };
+                
+                // Fetch data for all periods if needed
+                for (const period of periods) {
+                    if (!allPeriodData[period]) {
+                        await fetchPeriodDataForComparison(period);
+                    }
+                }
+                
+                // Calculate percentage changes
+                const changes = {};
+                let validDataFound = false;
+                
+                for (const period of periods) {
+                    if (allPeriodData[period] && allPeriodData[period].prices) {
+                        changes[period] = calculatePercentageChange(allPeriodData[period].prices);
+                        validDataFound = true;
+                    } else {
+                        changes[period] = null;
+                    }
+                }
+                
+                if (!validDataFound) {
+                    throw new Error('No valid data available for comparison');
+                }
+                
+                // Prepare data for chart
+                const periodLabels = periods.map(p => periodNames[p]);
+                const changeValues = periods.map(p => changes[p] || 0);
+                const colors = changeValues.map(v => v >= 0 ? 'green' : 'red');
+                
+                // Create comparison chart
+                const trace = {
+                    x: periodLabels,
+                    y: changeValues,
+                    type: 'bar',
+                    marker: {
+                        color: colors
+                    },
+                    text: changeValues.map(v => formatPercentage(v)),
+                    textposition: 'auto'
+                };
+                
+                const layout = {
+                    title: 'BTC Percentage Change by Time Period',
+                    xaxis: {
+                        title: 'Time Period'
+                    },
+                    yaxis: {
+                        title: 'Change (%)'
+                    },
+                    margin: {
+                        l: 50,
+                        r: 20,
+                        t: 40,
+                        b: 40
+                    },
+                    template: 'plotly_white'
+                };
+                
+                Plotly.newPlot('comparison-chart', [trace], layout, {responsive: true});
+                
+                // Update best/worst period metrics
+                const validChanges = periods.filter(p => changes[p] !== null).map(p => ({
+                    period: p,
+                    name: periodNames[p],
+                    change: changes[p]
+                }));
+                
+                if (validChanges.length > 0) {
+                    // Find best period
+                    const maxChange = Math.max(...validChanges.map(d => d.change));
+                    const bestPeriod = validChanges.find(d => d.change === maxChange);
+                    
+                    // Find worst period
+                    const minChange = Math.min(...validChanges.map(d => d.change));
+                    const worstPeriod = validChanges.find(d => d.change === minChange);
+                    
+                    // Update UI
+                    document.getElementById('best-period').textContent = `${bestPeriod.name} (${formatPercentage(bestPeriod.change)})`;
+                    document.getElementById('worst-period').textContent = `${worstPeriod.name} (${formatPercentage(worstPeriod.change)})`;
+                }
+                
+                // Show the container
+                hideLoading('comparison-loader', 'comparison-loading', 'comparison-container');
+                
+            } catch (error) {
+                console.error('Error generating comparison:', error);
+                hideLoading('comparison-loader', 'comparison-loading');
+                showError('comparison-error', `Unable to generate comparison data: ${error.message}`);
+            }
+        }
+        
+        // Helper function to fetch period data for comparison
+        async function fetchPeriodDataForComparison(period) {
+            let days;
+            switch (period) {
+                case '1d': days = 1; break;
+                case '5d': days = 5; break;
+                case '1w': days = 7; break;
+                case '1m': days = 30; break;
+                case '6m': days = 180; break;
+                case '1y': days = 365; break;
+                default: days = 1;
+            }
+            
+            const url = `${API_BASE}/coins/bitcoin/market_chart`;
+            const params = new URLSearchParams({
+                vs_currency: 'usd',
+                days: days,
+                interval: days <= 7 ? 'hourly' : 'daily'
+            });
+            
+            const response = await fetch(`${url}?${params.toString()}`);
+            
+            if (!response.ok) {
+                console.warn(`Could not fetch data for period ${period}: ${response.status} ${response.statusText}`);
+                return;
+            }
+            
+            const data = await response.json();
+            allPeriodData[period] = data;
+        }
+        
+        // Tab switching
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Get the period from the data attribute
+                    const period = tab.getAttribute('data-period');
+                    currentPeriod = period;
+                    
+                    // Fetch data for the period
+                    fetchBitcoinHistory(period);
+                });
+            });
+        }
+        
+        // Setup collapsible sections
+        function setupCollapsibles() {
+            const collapsibles = document.querySelectorAll('.collapsible');
+            collapsibles.forEach(coll => {
+                coll.addEventListener('click', function() {
+                    this.classList.toggle('active-collapse');
+                    const content = this.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
+                });
+            });
+        }
+        
+        // Initialize the application
+        function initApp() {
+            // Set current date in the footer
+            document.getElementById('last-updated').textContent = new Date().toLocaleString();
+            
+            // Setup tab switching
+            setupTabs();
+            
+            // Setup collapsibles
+            setupCollapsibles();
+            
+            // Fetch current stats
+            fetchCurrentStats();
+            
+            // Fetch initial period (1d)
+            fetchBitcoinHistory('1d');
+            
+            // Generate comparison chart
+            generateComparisonChart();
+            
+            // Set up refresh interval for current data (every 5 minutes)
+            setInterval(fetchCurrentStats, 5 * 60 * 1000);
+        }
+        
+        // Start the application when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
