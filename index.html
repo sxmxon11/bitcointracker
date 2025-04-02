@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cryptocurrency Price Tracker</title>
+    <title>Top Cryptocurrency Tracker</title>
     
     <!-- Include Chart.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -123,21 +123,10 @@
             font-weight: bold;
         }
         
-        .crypto-categories {
-            margin-bottom: 20px;
-        }
-        
-        .category-title {
-            font-size: 1rem;
-            font-weight: bold;
-            margin: 10px 0;
-            color: #666;
-        }
-        
         .crypto-selector {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         
@@ -161,7 +150,6 @@
             background-color: #e8e8e8;
         }
         
-        /* Major cryptos */
         .crypto-btn.btc {
             border-left: 4px solid #f7931a;
         }
@@ -170,37 +158,28 @@
             border-left: 4px solid #627eea;
         }
         
-        .crypto-btn.xrp {
-            border-left: 4px solid #23292f;
-        }
-        
-        .crypto-btn.ltc {
-            border-left: 4px solid #bfbbbb;
+        .crypto-btn.bnb {
+            border-left: 4px solid #f3ba2f;
         }
         
         .crypto-btn.sol {
             border-left: 4px solid #14f195;
         }
         
-        /* Memecoins */
+        .crypto-btn.xrp {
+            border-left: 4px solid #23292f;
+        }
+        
+        .crypto-btn.ada {
+            border-left: 4px solid #0033ad;
+        }
+        
         .crypto-btn.doge {
             border-left: 4px solid #c3a634;
         }
         
-        .crypto-btn.shib {
-            border-left: 4px solid #ffa409;
-        }
-        
-        .crypto-btn.pepe {
-            border-left: 4px solid #43a047;
-        }
-        
-        .crypto-btn.floki {
-            border-left: 4px solid #ff6b00;
-        }
-        
-        .crypto-btn.bonk {
-            border-left: 4px solid #ffcc00;
+        .crypto-btn.usdt {
+            border-left: 4px solid #26a17b;
         }
         
         .loader {
@@ -241,6 +220,33 @@
             font-size: 0.8rem;
         }
         
+        .rank-indicator {
+            display: inline-block;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            margin-right: 8px;
+        }
+        
+        .rank-1 {
+            background-color: gold;
+            color: #333;
+        }
+        
+        .rank-2 {
+            background-color: silver;
+            color: #333;
+        }
+        
+        .rank-3 {
+            background-color: #cd7f32; /* bronze */
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             .metric-container {
                 flex-direction: column;
@@ -254,14 +260,23 @@
             .chart-container {
                 height: 300px;
             }
+            
+            .crypto-selector {
+                gap: 5px;
+            }
+            
+            .crypto-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>Cryptocurrency Price Tracker</h1>
-            <h2>Historical price data and percentage changes</h2>
+            <h1>Top Cryptocurrency Tracker</h1>
+            <h2>Live prices and historical data for top cryptocurrencies</h2>
         </div>
     </header>
     
@@ -269,25 +284,15 @@
         <!-- Crypto Selector -->
         <div class="card">
             <h3>Select Cryptocurrency</h3>
-            
-            <div class="crypto-categories">
-                <div class="category-title">Major Cryptocurrencies</div>
-                <div class="crypto-selector">
-                    <button class="crypto-btn btc active" data-crypto="BTC">Bitcoin (BTC)</button>
-                    <button class="crypto-btn eth" data-crypto="ETH">Ethereum (ETH)</button>
-                    <button class="crypto-btn xrp" data-crypto="XRP">Ripple (XRP)</button>
-                    <button class="crypto-btn ltc" data-crypto="LTC">Litecoin (LTC)</button>
-                    <button class="crypto-btn sol" data-crypto="SOL">Solana (SOL)</button>
-                </div>
-                
-                <div class="category-title">Memecoins</div>
-                <div class="crypto-selector">
-                    <button class="crypto-btn doge" data-crypto="DOGE">Dogecoin (DOGE)</button>
-                    <button class="crypto-btn shib" data-crypto="SHIB">Shiba Inu (SHIB)</button>
-                    <button class="crypto-btn pepe" data-crypto="PEPE">Pepe (PEPE)</button>
-                    <button class="crypto-btn floki" data-crypto="FLOKI">Floki (FLOKI)</button>
-                    <button class="crypto-btn bonk" data-crypto="BONK">Bonk (BONK)</button>
-                </div>
+            <div class="crypto-selector">
+                <button class="crypto-btn btc active" data-crypto="BTC"><span class="rank-indicator rank-1">1</span>Bitcoin (BTC)</button>
+                <button class="crypto-btn eth" data-crypto="ETH"><span class="rank-indicator rank-2">2</span>Ethereum (ETH)</button>
+                <button class="crypto-btn bnb" data-crypto="BNB"><span class="rank-indicator rank-3">3</span>BNB</button>
+                <button class="crypto-btn sol" data-crypto="SOL"><span class="rank-indicator">4</span>Solana (SOL)</button>
+                <button class="crypto-btn xrp" data-crypto="XRP"><span class="rank-indicator">5</span>XRP</button>
+                <button class="crypto-btn usdt" data-crypto="USDT"><span class="rank-indicator">6</span>Tether (USDT)</button>
+                <button class="crypto-btn ada" data-crypto="ADA"><span class="rank-indicator">7</span>Cardano (ADA)</button>
+                <button class="crypto-btn doge" data-crypto="DOGE"><span class="rank-indicator">8</span>Dogecoin (DOGE)</button>
             </div>
         </div>
         
@@ -358,6 +363,10 @@
                     <div id="market-cap" class="metric-value">Loading...</div>
                 </div>
                 <div class="metric">
+                    <div class="metric-label">Market Cap Rank</div>
+                    <div id="market-rank" class="metric-value">Loading...</div>
+                </div>
+                <div class="metric">
                     <div class="metric-label">24h Trading Volume</div>
                     <div id="trading-volume" class="metric-value">Loading...</div>
                 </div>
@@ -381,45 +390,41 @@
         let currentCrypto = 'BTC';
         let currentPeriodDays = 1;
         const cryptoNames = {
-            // Major cryptos
             'BTC': 'Bitcoin',
             'ETH': 'Ethereum',
-            'XRP': 'Ripple',
-            'LTC': 'Litecoin',
+            'BNB': 'BNB',
             'SOL': 'Solana',
-            // Memecoins
-            'DOGE': 'Dogecoin',
-            'SHIB': 'Shiba Inu',
-            'PEPE': 'Pepe',
-            'FLOKI': 'Floki',
-            'BONK': 'Bonk'
+            'XRP': 'XRP',
+            'USDT': 'Tether',
+            'ADA': 'Cardano',
+            'DOGE': 'Dogecoin'
         };
         
         const cryptoColors = {
-            // Major cryptos
             'BTC': '#f7931a',
             'ETH': '#627eea',
-            'XRP': '#23292f',
-            'LTC': '#bfbbbb',
+            'BNB': '#f3ba2f',
             'SOL': '#14f195',
-            // Memecoins
-            'DOGE': '#c3a634',
-            'SHIB': '#ffa409',
-            'PEPE': '#43a047',
-            'FLOKI': '#ff6b00',
-            'BONK': '#ffcc00'
+            'XRP': '#23292f',
+            'USDT': '#26a17b',
+            'ADA': '#0033ad',
+            'DOGE': '#c3a634'
+        };
+        
+        const marketRanks = {
+            'BTC': 1,
+            'ETH': 2,
+            'BNB': 3,
+            'SOL': 4,
+            'XRP': 5,
+            'USDT': 6,
+            'ADA': 7,
+            'DOGE': 8
         };
         
         // Format utilities
         function formatPrice(price) {
-            if (price < 0.0001) {
-                return new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 6,
-                    maximumFractionDigits: 8
-                }).format(price);
-            } else if (price < 0.01) {
+            if (price < 0.01) {
                 return new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'USD',
@@ -526,6 +531,7 @@
                 
                 // Update market info
                 document.getElementById('market-cap').textContent = formatPrice(cryptoData.MKTCAP);
+                document.getElementById('market-rank').textContent = `#${marketRanks[crypto]}`;
                 document.getElementById('trading-volume').textContent = formatPrice(cryptoData.TOTALVOLUME24H);
                 document.getElementById('circulating-supply').textContent = `${formatNumber(cryptoData.SUPPLY)} ${crypto}`;
                 
